@@ -55,18 +55,18 @@ clean:
 
 .PHONY: reformat
 reformat:
-	isort $(SOURCE_FOLDER) tests
-	black $(SOURCE_FOLDER) tests
+	isort $(SOURCE_FOLDER) cdk tests
+	black $(SOURCE_FOLDER) cdk tests
 
 
 .PHONY: lint
 lint:
-	$(PYTHON) -m pycodestyle $(SOURCE_FOLDER) tests
-	$(PYTHON) -m isort --check-only $(SOURCE_FOLDER) tests
-	$(PYTHON) -m black --check $(SOURCE_FOLDER) tests
-	$(PYTHON) -m pylint $(SOURCE_FOLDER)
+	$(PYTHON) -m pycodestyle $(SOURCE_FOLDER) cdk tests
+	$(PYTHON) -m isort --check-only $(SOURCE_FOLDER) cdk tests
+	$(PYTHON) -m black --check $(SOURCE_FOLDER) cdk tests
+	$(PYTHON) -m pylint $(SOURCE_FOLDER) cdk
 	PYTHONPATH=$(SOURCE_FOLDER) $(PYTHON) -m pylint --disable=missing-docstring,no-self-use tests
-	$(PYTHON) -m mypy $(SOURCE_FOLDER) tests
+	$(PYTHON) -m mypy $(SOURCE_FOLDER) cdk tests
 
 
 .PHONY: test tests

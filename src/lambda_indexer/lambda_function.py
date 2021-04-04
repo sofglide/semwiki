@@ -68,5 +68,14 @@ def lambda_handler(event: Any, _: Any) -> None:
 
 
 if __name__ == "__main__":
-    test_event = {"Records": [{"s3": {"bucket": {"name": "semwiki"}, "object": {"key": "wikipages/10346088"}}}]}
+    test_event = {
+        "Records": [
+            {
+                "s3": {
+                    "bucket": {"name": "wikireferencing-docsdestination32d97be3-f6y6ohczj5zd"},
+                    "object": {"key": "wikipages/43758295"},
+                }
+            }
+        ]
+    }
     lambda_handler(test_event, None)
