@@ -66,6 +66,7 @@ GET /semwiki/_mappings?pretty
 
 GET /semwiki/_stats
 
+GET /semwiki/_doc/19045501
 
 GET /semwiki/_search
 {

@@ -21,9 +21,9 @@ env-create:
 .PHONY: env-update
 env-update:
 	bash -c "\
-		. .venv/bin/activate; \
-		pip install wheel;\
-		pip install --upgrade -r requirements.txt; \
+		. .venv/bin/activate && \
+		pip install wheel && \
+		pip install --upgrade -r requirements.txt && \
 	"
 
 
@@ -139,7 +139,7 @@ docker-push: docker-ecr-login
 
 .PHONY: docker-image
 docker-image:
-	cd universal-sentence-encoder; \
+	cd universal-sentence-encoder && \
 	docker build \
 		--cache-from $(DOCKER_IMAGE_NAME) \
 		-t $(DOCKER_IMAGE_NAME) \
@@ -206,7 +206,7 @@ ES_IMAGE = amazon/opendistro-for-elasticsearch:1.13.1
 
 .PHONY: es-image
 es-image:
-	cd elasticsearch; \
+	cd elasticsearch && \
 	docker build \
 		--cache-from $(DOCKER_ES_IMAGE) \
 		-t $(DOCKER_ES_IMAGE) \
@@ -223,11 +223,11 @@ es-stop:
 
 .PHONY: kibana-start
 kibana-start:
-	cd elasticsearch; docker-compose up -d
+	cd elasticsearch && docker-compose up -d
 
 .PHONY: kibana-stop
 kibana-stop:
-	cd elasticsearch; docker-compose stop
+	cd elasticsearch && docker-compose stop
 
 
 ###############################################################################
@@ -240,8 +240,8 @@ LAMBDA_INDEXER_ROLE = arn:aws:iam::084705978329:role/lambda-indexer
 
 .PHONY: lambda-indexer-package
 lambda-indexer-package:
-	cd src/lambda_indexer/package; zip -r ../lambda_indexer.zip .; cd ..; \
-	zip -g lambda_indexer.zip lambda_function.py;
+	cd src/lambda_indexer/package && zip -r ../lambda_indexer.zip . && cd .. && \
+	zip -g lambda_indexer.zip lambda_function.py
 
 
 .PHONY: lambda-indexer-create
