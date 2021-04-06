@@ -90,26 +90,26 @@ GET /semwiki/_search
 * deploy ES stack
 * deploy embedding stack
   * build and push embedder image
-* in src/config/config.ini
-  * update “es_url” from ES stack
-  * update “public_ip” from embedding stack
-* in src/lambda_indexer/lambda_function.py
-  * update ES_URL from ES stack
-  * update EMBEDDER_IP from embedding stack
+* in `src/config/config.ini`
+  * update `es_url` from ES stack
+  * update `public_ip` from embedding stack
+* in `src/lambda_indexer/lambda_function.py`
+  * update `ES_URL` from ES stack
+  * update `EMBEDDER_IP` from embedding stack
 * package indexing lambda
-  * make lambda-indexer-package
+  * `make lambda-indexer-package`
 * deploy S3Referencing stack
-  * update s3_bucket in src/config.ini
-* create “semwiki” index in ES
-  * PYTHONPATH=src python src/es/es_setup.py
-  * make sure “create_index()” is uncommented
+  * update s3_bucket in `src/config.ini`
+* create `semwiki` index in ES
+  * `PYTHONPATH=src python src/es/es_setup.py`
+  * `make sure “create_index()” is uncommented`
 * run wiki to push pages to s3
-  * PYTHONPATH=src python src/scripts.py upload-random-pages -n 5
+  * `PYTHONPATH=src python src/scripts.py upload-random-pages -n 5`
   * check that the documents have been added to s3
   * check that the documents have been indexed in ES
 * deploy API service
   * build and push API image
 * search ES index using the API
-  * curl -XGET -d '{"query": "beautiful painting"}' http://<API_IP>:8000/search\?n=3 | jq
+  * `curl -XGET -d '{"query": "beautiful painting"}' http://<API_IP>:8000/search\?n=3 | jq`
 * test embedding service
-  * curl -XPOST -d '{"instances": ["toto", "tata"]}' http://<EMBEDDER_ip>:8501/v1/models/USE_3:predict | jq 
+  * `curl -XPOST -d '{"instances": ["toto", "tata"]}' http://<EMBEDDER_ip>:8501/v1/models/USE_3:predict | jq`
