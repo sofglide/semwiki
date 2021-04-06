@@ -1,5 +1,5 @@
 from aws_cdk import core
-from stacks.embedder_stack import EmbeddingService
+from stacks.embedder_stack import SearchAPIService
 from stacks.es_stack import ElasticSearchCluster
 from stacks.s3referencing_stack import S3Referencing
 
@@ -12,8 +12,8 @@ S3Referencing(
 # indexing stack
 ElasticSearchCluster(app, "ESCluster", env={"region": "eu-west-1"}, description="ElasticSearch cluster")
 # embedding stack
-EmbeddingService(app, "EmbeddingService", env={"region": "eu-west-1"}, description="Embedding service")
+SearchAPIService(app, "EmbeddingService", env={"region": "eu-west-1"}, description="Embedding service")
 # api stack
-
+SearchAPIService(app, "SearchAPIService", env={"region": "eu-west-1"}, description="Search API service")
 
 app.synth()
