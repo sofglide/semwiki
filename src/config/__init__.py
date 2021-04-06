@@ -36,5 +36,8 @@ class Config(ConfigParser):
         port = self.get("embedder", "port")
         return f"http://{public_ip}:{port}"
 
+    def get_system_id(self) -> str:
+        return self.get("DEFAULT", "system-id")
+
 
 config = Config()

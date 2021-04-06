@@ -11,21 +11,22 @@ from smart_open import smart_open
 
 import elasticsearch as es
 
-s3 = boto3.client("s3")
+EMBEDDER_IP = "54.154.40.103"
 
-ES_URL = "https://search-semwiki-6yrq325yksanyp2gwbjbk63une.eu-west-1.es.amazonaws.com/"
+ES_URL = "https://search-esclust-elasti-dd7hht7lxylw-bpali5yqjubaa4zwb6n2m36s24.eu-west-1.es.amazonaws.com/"
 ES_AUTH = ("semwiki", "SemWiki21!")
-es_handler = es.Elasticsearch([ES_URL], http_auth=ES_AUTH, use_ssl=True, verify_certs=False)
 
-index_name = "semwiki"
+INDEX_NAME = "semwiki"
+
+es_handler = es.Elasticsearch([ES_URL], http_auth=ES_AUTH, use_ssl=True, verify_certs=False)
+s3 = boto3.client("s3")
 
 
 def get_embedding(text: str) -> List[float]:
     """
     send text to embedding service and return embedding
     """
-    service_url = "http://34.252.37.103:8501"
-    service_endpoint = f"{service_url}/v1/models/USE_3:predict"
+    service_endpoint = f"http://{EMBEDDER_IP}:8501/v1/models/USE_3:predict"
     request_data = json.dumps({"instances": [text]})
     resp = requests.post(service_endpoint, data=request_data)
     embedding = resp.json()["predictions"][0]
@@ -49,7 +50,7 @@ def index_page(s3_bucket: str, s3_key: str) -> None:
     page["uri"] = s3_file_uri
     page["embedding"] = get_embedding(content)
 
-    es_handler.index(index_name, body=page, id=page_id)
+    es_handler.index(INDEX_NAME, body=page, id=page_id)
 
 
 def lambda_handler(event: Any, _: Any) -> None:
@@ -68,5 +69,14 @@ def lambda_handler(event: Any, _: Any) -> None:
 
 
 if __name__ == "__main__":
-    test_event = {"Records": [{"s3": {"bucket": {"name": "semwiki"}, "object": {"key": "wikipages/10346088"}}}]}
+    test_event = {
+        "Records": [
+            {
+                "s3": {
+                    "bucket": {"name": "stacks-docsdestination32d97be3-f6y6ohczj5zd"},
+                    "object": {"key": "wikipages/43758295"},
+                }
+            }
+        ]
+    }
     lambda_handler(test_event, None)
