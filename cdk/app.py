@@ -11,7 +11,9 @@ S3Referencing(
 )
 # indexing stack
 ElasticSearchCluster(app, "ESCluster", env={"region": "eu-west-1"}, description="ElasticSearch cluster")
-
+# embedding stack
 EmbeddingService(app, "EmbeddingService", env={"region": "eu-west-1"}, description="Embedding service")
+# api stack
+
 
 app.synth()
