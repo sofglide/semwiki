@@ -72,7 +72,7 @@ if __name__ == "__main__":
         "Records": [
             {
                 "s3": {
-                    "bucket": {"name": "wikireferencing-docsdestination32d97be3-f6y6ohczj5zd"},
+                    "bucket": {"name": "stacks-docsdestination32d97be3-f6y6ohczj5zd"},
                     "object": {"key": "wikipages/43758295"},
                 }
             }

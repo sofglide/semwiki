@@ -8,7 +8,7 @@ from config import config
 LAMBDA_PATH = "../src/lambda_indexer/lambda_indexer.zip"
 
 
-class WikiReferencingStack(core.Stack):
+class S3Referencing(core.Stack):
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
