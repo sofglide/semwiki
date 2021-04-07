@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 import click
+
 import elasticsearch as es
 from config import config
 
