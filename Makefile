@@ -255,4 +255,6 @@ lambda-indexer-create: lambda-indexer-package
 
 .PHONY: lambda-indexer-update
 lambda-indexer-update: lambda-indexer-package
-	aws lambda update-function-code --function-name lambda_indexer --zip-file fileb://lambda_indexer.zip
+	cd src/lambda_indexer && \
+	aws lambda update-function-code --function-name WikiReferencing-IndexingHandler3C921A11-HBF08SSAY6IX \
+		--zip-file fileb://lambda_indexer.zip

@@ -11,7 +11,7 @@ from smart_open import smart_open
 
 import elasticsearch as es
 
-EMBEDDER_IP = "54.154.40.103"
+EMBEDDER_IP = "54.154.82.11"
 
 ES_URL = "https://search-esclust-elasti-dd7hht7lxylw-bpali5yqjubaa4zwb6n2m36s24.eu-west-1.es.amazonaws.com/"
 ES_AUTH = ("semwiki", "SemWiki21!")

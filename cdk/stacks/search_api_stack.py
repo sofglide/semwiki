@@ -5,32 +5,32 @@ from aws_cdk import core
 
 from config import config
 
-EMBEDDING_REPO_NAME = "semwiki/universal_sentence_encoder_3"
-EMBEDDING_IMAGE_TAG = "latest"
+API_REPO_NAME = "semwiki/wikisemantic-api"
+API_IMAGE_TAG = "latest"
 
 
-class EmbeddingService(core.Stack):
+class SearchAPIService(core.Stack):
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        vpc = ec2.Vpc(self, "EmbeddingVpc", max_azs=1)
+        vpc = ec2.Vpc(self, "SearchAPIVpc", max_azs=1, nat_gateways=0)
 
-        cluster = ecs.Cluster(self, "EmbeddingCluster", vpc=vpc)
+        cluster = ecs.Cluster(self, "SearchAPICluster", vpc=vpc)
 
-        task_definition = ecs.FargateTaskDefinition(self, "EmbeddingTask", cpu=512, memory_limit_mib=1024)
+        task_definition = ecs.FargateTaskDefinition(self, "SearchAPITask", cpu=256, memory_limit_mib=512)
 
-        ecr_repo = ecr.Repository.from_repository_name(self, "EmbeddingRepo", EMBEDDING_REPO_NAME)
-        container_image = ecs.ContainerImage.from_ecr_repository(repository=ecr_repo, tag=EMBEDDING_IMAGE_TAG)
+        ecr_repo = ecr.Repository.from_repository_name(self, "SearchAPIRepo", API_REPO_NAME)
+        container_image = ecs.ContainerImage.from_ecr_repository(repository=ecr_repo, tag=API_IMAGE_TAG)
         task_definition.add_container(
-            "EmbeddingContainer",
+            "SearchAPIContainer",
             image=container_image,
-            port_mappings=[ecs.PortMapping(container_port=8501, protocol=ecs.Protocol.TCP)],
-            memory_reservation_mib=1024,
+            port_mappings=[ecs.PortMapping(container_port=8000, protocol=ecs.Protocol.TCP)],
+            memory_reservation_mib=512,
         )
 
         fargate_service = ecs.FargateService(
             self,
-            "EmbeddingService",
+            "SearchAPIService",
             task_definition=task_definition,
             cluster=cluster,
             assign_public_ip=True,
@@ -39,8 +39,8 @@ class EmbeddingService(core.Stack):
 
         fargate_service.connections.security_groups[0].add_ingress_rule(
             peer=ec2.Peer.ipv4("0.0.0.0/0"),
-            connection=ec2.Port.tcp(8501),
-            description="Allow TF serving REST inbound from VPC"
+            connection=ec2.Port.tcp(8000),
+            description="Allow TF serving REST inbound from VPC",
         )
 
         core.Tags.of(vpc).add("system-id", config.get_system_id())
