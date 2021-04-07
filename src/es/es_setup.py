@@ -4,6 +4,7 @@ elastic search interaction module
 import logging
 from typing import Any
 
+import click
 import elasticsearch as es
 from config import config
 
@@ -15,14 +16,16 @@ ES_AUTH = config.get_es_credentials()
 es_handler = es.Elasticsearch([ES_URL], http_auth=ES_AUTH, use_ssl=True, verify_certs=False)
 
 
-def create_index() -> None:
+@click.command(help="create index in Elasticsearch cluster")
+@click.option("--exists_ok", "-n", type=click.BOOL, default=False, help="delete index if it exists")
+def create_index(exists_ok: bool) -> None:
     """
     create es index in cluster
     """
     index_name = config.get_es_index()
     index_settings = {"number_of_shards": 1, "knn": "true"}
     index_mappings = {
-        "properties": {  # id: pageid
+        "properties": {
             "uri": {"type": "text"},
             "title": {"type": "text"},
             "url": {"type": "text"},
@@ -31,8 +34,12 @@ def create_index() -> None:
     }
 
     index_body = {"settings": index_settings, "mappings": index_mappings}
+    if es_handler.indices.exists_type(index_name):
+        if exists_ok:
+            es_handler.indices.delete(index_name)  # pylint: disable=E1123
+        else:
+            raise ValueError(f"Index {index_name} already exists, set 'exists_ok' to True if you want to overwrite it")
 
-    es_handler.indices.delete(index_name, ignore_unavailable=True)  # pylint: disable=E1123
     es_handler.indices.create(index_name, body=index_body, params=None, headers=None)
 
 
@@ -42,5 +49,4 @@ def list_indices() -> Any:
 
 
 if __name__ == "__main__":
-    logger.info("resetting index disabled by security, uncomment following line to reset index")
-    # create_index()
+    create_index()
