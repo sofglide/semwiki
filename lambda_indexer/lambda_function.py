@@ -2,6 +2,8 @@
 indexing lambda
 """
 import json
+import logging
+import os
 import urllib.parse
 from typing import Any, List
 
@@ -11,14 +13,17 @@ from smart_open import smart_open
 
 import elasticsearch as es
 
-EMBEDDER_IP = "54.154.82.11"
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-ES_URL = "https://search-esclust-elasti-dd7hht7lxylw-bpali5yqjubaa4zwb6n2m36s24.eu-west-1.es.amazonaws.com/"
-ES_AUTH = ("semwiki", "SemWiki21!")
+es_url = os.getenv("ES_URL")
+es_user = os.getenv("ES_USER")
+es_password = os.getenv("ES_PASSWORD")
+index_name = os.getenv("INDEX_NAME")
 
-INDEX_NAME = "semwiki"
+embedder_ip = os.getenv("EMBEDDER_IP")
 
-es_handler = es.Elasticsearch([ES_URL], http_auth=ES_AUTH, use_ssl=True, verify_certs=False)
+es_handler = es.Elasticsearch(es_url, port=443, http_auth=(es_user, es_password), use_ssl=True, verify_certs=False)
 s3 = boto3.client("s3")
 
 
@@ -26,7 +31,7 @@ def get_embedding(text: str) -> List[float]:
     """
     send text to embedding service and return embedding
     """
-    service_endpoint = f"http://{EMBEDDER_IP}:8501/v1/models/USE_3:predict"
+    service_endpoint = f"http://{embedder_ip}:8501/v1/models/USE_3:predict"
     request_data = json.dumps({"instances": [text]})
     resp = requests.post(service_endpoint, data=request_data)
     embedding = resp.json()["predictions"][0]
@@ -50,13 +55,19 @@ def index_page(s3_bucket: str, s3_key: str) -> None:
     page["uri"] = s3_file_uri
     page["embedding"] = get_embedding(content)
 
-    es_handler.index(INDEX_NAME, body=page, id=page_id)
+    es_handler.index(index_name, body=page, id=page_id)
 
 
 def lambda_handler(event: Any, _: Any) -> None:
     """
     lambda handler
     """
+    logger.info(f"es_url: {es_url}")
+    logger.info(f"es_user: {es_user}")
+    logger.info(f"es_password: {es_password}")
+    logger.info(f"index_name: {index_name}")
+    logger.info(f"embedder_ip: {embedder_ip}")
+
     bucket = event["Records"][0]["s3"]["bucket"]["name"]
     key = urllib.parse.unquote_plus(event["Records"][0]["s3"]["object"]["key"], encoding="utf-8")
     try:
@@ -73,8 +84,8 @@ if __name__ == "__main__":
         "Records": [
             {
                 "s3": {
-                    "bucket": {"name": "stacks-docsdestination32d97be3-f6y6ohczj5zd"},
-                    "object": {"key": "wikipages/43758295"},
+                    "bucket": {"name": "wikireferencing-docsdestination32d97be3-xyump1ay7g7q"},
+                    "object": {"key": "wikipages/10298310"},
                 }
             }
         ]

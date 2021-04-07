@@ -31,10 +31,12 @@ class Config(ConfigParser):
     def get_embedding_size(self) -> int:
         return self.getint("ES", "embedding_size")
 
+    def get_embedder_ip(self) -> str:
+        return self.get("embedder", "public_ip")
+
     def get_embedder_url(self) -> str:
-        public_ip = self.get("embedder", "public_ip")
         port = self.get("embedder", "port")
-        return f"http://{public_ip}:{port}"
+        return f"http://{self.get_embedder_ip()}:{port}"
 
     def get_system_id(self) -> str:
         return self.get("DEFAULT", "system-id")
