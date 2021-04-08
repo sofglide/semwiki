@@ -23,7 +23,7 @@ env-update:
 	bash -c "\
 		. .venv/bin/activate && \
 		pip install wheel && \
-		pip install --upgrade -r requirements.txt && \
+		pip install --upgrade -r requirements.txt \
 	"
 
 

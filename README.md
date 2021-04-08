@@ -58,7 +58,8 @@ source .venv/bin/activate
 
 ## ElasticSearch cURL requests (saved here to be used for debugging)
 ```
-GET /_cat/indices
+GET /_cat/indices?v=true&s=index&pretty
+
 GET /_cat/indices/semwiki?v=true&s=index&pretty
 
 GET /semwiki/_settings?pretty
