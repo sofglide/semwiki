@@ -1,5 +1,6 @@
 # Wikipedia Semantic Referencing example
 
+![semantic search](images/wikipedia_semantic_search.svg?raw=true "Wikipedia Semantic Search")
 
 ## Description
 This is work in progress, many things in the workflow should be improved and 
