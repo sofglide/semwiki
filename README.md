@@ -1,4 +1,4 @@
-# Wikipedia Semantic Referencing example
+# Semantic search service over wikipedia articles using AWS infrastructure
 
 ![semantic search](images/wikipedia_semantic_search.svg?raw=true "Wikipedia Semantic Search")
 
