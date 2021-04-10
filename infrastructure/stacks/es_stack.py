@@ -1,3 +1,6 @@
+"""
+ElasticSearch Stack
+"""
 from aws_cdk import aws_elasticsearch as aes
 from aws_cdk import aws_iam as iam
 from aws_cdk import core
@@ -6,6 +9,10 @@ from config import config
 
 
 class ElasticSearchCluster(core.Stack):
+    """
+    ElasticSearch Domain
+    """
+
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -34,6 +41,9 @@ class ElasticSearchCluster(core.Stack):
             node_to_node_encryption=True,
             encryption_at_rest=aes.EncryptionAtRestOptions(enabled=True),
             enforce_https=True,
+            removal_policy=core.RemovalPolicy.DESTROY,
         )
 
         core.Tags.of(self.elastic_domain).add("system-id", config.get_system_id())
+
+        core.CfnOutput(self, "ESDomainEndpoint", value=self.elastic_domain.domain_endpoint)

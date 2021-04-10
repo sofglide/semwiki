@@ -11,9 +11,11 @@ import wikipedia
 from smart_open import open as smart_open
 
 from config import config
+from infrastructure_access import get_s3_bucket_name
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 s3 = boto3.resource("s3")
 
 
@@ -44,17 +46,15 @@ def upload_random_pages(number: int = 1) -> None:
     """
     uploads a number of random pages from wikipedia to s3
     """
-    s3_bucket = config.get_s3_bucket()
+    s3_bucket = get_s3_bucket_name()
     s3_prefix = config.get_s3_prefix()
     for count in range(number):
         page = get_random_page()
-        s3_file_key = f"S3://{s3_bucket}/{s3_prefix}/{page['pageid']}"
+        s3_file_key = f"S3://{s3_bucket}/{s3_prefix}/{page['pageid']}.json"
         with smart_open(s3_file_key, "w") as fp:
             json.dump(page, fp)
         logger.info(f"uploaded page {count + 1}/{number}")
 
 
 if __name__ == "__main__":
-    # random_page = get_random_page()
-
     upload_random_pages()

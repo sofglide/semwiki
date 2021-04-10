@@ -10,6 +10,7 @@ pytest==6.2.*
 boto3
 click
 elasticsearch
+requests
 sanic
 smart-open
 wikipedia
@@ -22,4 +23,4 @@ aws-cdk.aws-s3-notifications==1.96.0
 aws_cdk.aws_elasticsearch==1.96.0
 aws_cdk.aws_ec2==1.96.0
 aws_cdk.aws_ecs==1.96.0
-aws_cdk.aws_ecs_patterns==1.96.0
+aws_cdk.aws_iam==1.96.0

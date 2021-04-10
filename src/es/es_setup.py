@@ -8,11 +8,12 @@ import click
 
 import elasticsearch as es
 from config import config
+from infrastructure_access import get_es_endpoint
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-ES_URL = config.get_es_url()
+ES_URL = f"https://{get_es_endpoint()}"
 ES_AUTH = config.get_es_credentials()
 es_handler = es.Elasticsearch([ES_URL], http_auth=ES_AUTH, use_ssl=True, verify_certs=False)
 
@@ -35,7 +36,7 @@ def create_index(exists_ok: bool) -> None:
     }
 
     index_body = {"settings": index_settings, "mappings": index_mappings}
-    if es_handler.indices.exists_type(index_name):
+    if es_handler.indices.exists(index_name):
         if exists_ok:
             es_handler.indices.delete(index_name)  # pylint: disable=E1123
         else:
@@ -50,4 +51,4 @@ def list_indices() -> Any:
 
 
 if __name__ == "__main__":
-    create_index()
+    create_index()  # pylint: disable=E1120

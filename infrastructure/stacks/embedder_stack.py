@@ -1,3 +1,6 @@
+"""
+Embedding service stack
+"""
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
@@ -10,6 +13,10 @@ EMBEDDING_IMAGE_TAG = "latest"
 
 
 class EmbeddingService(core.Stack):
+    """
+    ECS Embedding Service
+    """
+
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -28,7 +35,7 @@ class EmbeddingService(core.Stack):
             memory_reservation_mib=1024,
         )
 
-        fargate_service = ecs.FargateService(
+        embedding_service = ecs.FargateService(
             self,
             "EmbeddingService",
             task_definition=task_definition,
@@ -37,7 +44,7 @@ class EmbeddingService(core.Stack):
             desired_count=1,
         )
 
-        fargate_service.connections.security_groups[0].add_ingress_rule(
+        embedding_service.connections.security_groups[0].add_ingress_rule(
             peer=ec2.Peer.ipv4("0.0.0.0/0"),
             connection=ec2.Port.tcp(8501),
             description="Allow TF serving REST inbound from VPC",
@@ -46,3 +53,5 @@ class EmbeddingService(core.Stack):
         core.Tags.of(vpc).add("system-id", config.get_system_id())
         core.Tags.of(cluster).add("system-id", config.get_system_id())
         core.Tags.of(task_definition).add("system-id", config.get_system_id())
+
+        core.CfnOutput(self, "ClusterArn", value=cluster.cluster_arn)

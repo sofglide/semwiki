@@ -55,18 +55,18 @@ clean:
 
 .PHONY: reformat
 reformat:
-	isort $(SOURCE_FOLDER) cdk tests
-	black $(SOURCE_FOLDER) cdk tests
+	isort $(SOURCE_FOLDER) lambda_indexer infrastructure tests
+	black $(SOURCE_FOLDER) lambda_indexer infrastructure tests
 
 
 .PHONY: lint
 lint:
-	$(PYTHON) -m pycodestyle $(SOURCE_FOLDER) cdk tests
-	$(PYTHON) -m isort --check-only $(SOURCE_FOLDER) cdk tests
-	$(PYTHON) -m black --check $(SOURCE_FOLDER) cdk tests
-	$(PYTHON) -m pylint $(SOURCE_FOLDER) cdk
+	$(PYTHON) -m pycodestyle $(SOURCE_FOLDER) lambda_indexer infrastructure tests
+	$(PYTHON) -m isort --check-only $(SOURCE_FOLDER) lambda_indexer infrastructure tests
+	$(PYTHON) -m black --check $(SOURCE_FOLDER) lambda_indexer infrastructure tests
+	$(PYTHON) -m pylint $(SOURCE_FOLDER) lambda_indexer infrastructure
 	PYTHONPATH=$(SOURCE_FOLDER) $(PYTHON) -m pylint --disable=missing-docstring,no-self-use tests
-	$(PYTHON) -m mypy $(SOURCE_FOLDER) cdk tests
+	$(PYTHON) -m mypy $(SOURCE_FOLDER) lambda_indexer tests
 
 
 .PHONY: test tests
@@ -117,8 +117,8 @@ ECR_DOCKER_REGISTRY = 084705978329.dkr.ecr.eu-west-1.amazonaws.com
 docker-ecr-login:
 	aws ecr get-login-password | docker login --username AWS --password-stdin $(ECR_DOCKER_REGISTRY)
 
-.PHONY: docker-pull
-docker-pull: docker-ecr-login
+.PHONY: docker-embedder-pull
+docker-embedder-pull: docker-ecr-login
 	( \
 					docker pull $(ECR_DOCKER_REGISTRY)/$(LATEST) \
 					&& docker tag $(ECR_DOCKER_REGISTRY)/$(LATEST) $(DOCKER_IMAGE_NAME) \
@@ -127,8 +127,8 @@ docker-pull: docker-ecr-login
 					&& docker tag $(ECR_DOCKER_REGISTRY)/$(DOCKER_IMAGE_NAME) $(DOCKER_IMAGE_NAME) \
 	)
 
-.PHONY: docker-push
-docker-push: docker-ecr-login
+.PHONY: docker-embedder-push
+docker-embedder-push: docker-ecr-login
 	# Push the image as it is
 	docker tag $(DOCKER_IMAGE_NAME) $(ECR_DOCKER_REGISTRY)/$(IMAGE)
 	docker push $(ECR_DOCKER_REGISTRY)/$(IMAGE)
@@ -137,8 +137,8 @@ docker-push: docker-ecr-login
 	docker push $(ECR_DOCKER_REGISTRY)/$(LATEST)
 
 
-.PHONY: docker-image
-docker-image:
+.PHONY: docker-embedder-image
+docker-embedder-image:
 	cd universal-sentence-encoder && \
 	docker build \
 		--cache-from $(DOCKER_IMAGE_NAME) \
@@ -146,8 +146,8 @@ docker-image:
 		.
 
 
-.PHONY: docker-create-ecr-repo
-docker-create-ecr-repo:
+.PHONY: docker-create-ecr-embedder-repo
+docker-create-ecr-embedder-repo:
 	aws ecr create-repository --repository-name $(PROJECT_NAME)/$(MODEL_NAME) \
 	--image-scanning-configuration scanOnPush=true \
 	--region eu-west-1
@@ -233,15 +233,18 @@ kibana-stop:
 ###############################################################################
 # LAMBDAS:                                                                    #
 ###############################################################################
-# https://docs.aws.amazon.com/lambda/latest/dg/python-package-create.html#python-package-create-with-dependency
-
 LAMBDA_INDEXER_ROLE = arn:aws:iam::084705978329:role/lambda-indexer
+
+INDEXING_LAMBDA_QUERY = "Stacks[0].Outputs[?OutputKey=='IndexingLambdaName'].OutputValue"
+
+INDEXING_LAMBDA_NAME = $$(aws cloudformation describe-stacks --stack-name $(STACK_INDEXING) \
+						--query $(INDEXING_LAMBDA_QUERY) --output text)
 
 
 .PHONY: lambda-indexer-package
 lambda-indexer-package:
-	cd src/lambda_indexer/package && zip -r ../lambda_indexer.zip . && cd .. && \
-	zip -g lambda_indexer.zip lambda_function.py
+	cd lambda_indexer/package && zip -r ../lambda_indexer.zip . && cd .. && \
+	zip -g lambda_indexer.zip lambda_function.py util.py
 
 
 .PHONY: lambda-indexer-create
@@ -255,6 +258,52 @@ lambda-indexer-create: lambda-indexer-package
 
 .PHONY: lambda-indexer-update
 lambda-indexer-update: lambda-indexer-package
-	cd src/lambda_indexer && \
-	aws lambda update-function-code --function-name WikiReferencing-IndexingHandler3C921A11-HBF08SSAY6IX \
-		--zip-file fileb://lambda_indexer.zip
+	cd lambda_indexer && \
+	aws lambda update-function-code --function-name $(INDEXING_LAMBDA_NAME) --zip-file fileb://lambda_indexer.zip
+
+###############################################################################
+# CloudFormation:                                                             #
+###############################################################################
+STACK_ELASTICSEARCH = ESCluster
+STACK_EMBEDDING_SERVICE = EmbeddingService
+STACK_INDEXING = WikiReferencing
+STACK_API_SERVICE = SearchAPIService
+
+CLUSTER_ARN_QUERY = "Stacks[0].Outputs[?OutputKey=='ClusterArn'].OutputValue"
+TASK_QUERY = "taskArns[0]"
+NETWORK_INTERFACE_QUERY = "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value"
+PUBLIC_IP_QUERY = "NetworkInterfaces[0].Association.PublicIp"
+
+ELASTICSEARCH_ENDPOINT_QUERY = "Stacks[0].Outputs[?OutputKey=='ESDomainEndpoint'].OutputValue"
+
+EMBEDDER_CLUSTER_ARN = $$(aws cloudformation describe-stacks --stack-name $(STACK_EMBEDDING_SERVICE) \
+				--query $(CLUSTER_ARN_QUERY) --output text)
+EMBEDDER_TASK = $$(aws ecs list-tasks --cluster $(EMBEDDER_CLUSTER_ARN) --query $(TASK_QUERY) --output text)
+EMBEDDER_NETWORK_INTERFACE = $$(aws ecs describe-tasks --cluster $(EMBEDDER_CLUSTER_ARN) --tasks $(EMBEDDER_TASK) \
+					--query $(NETWORK_INTERFACE_QUERY) --output text)
+EMBEDDER_PUBLIC_IP = $$(aws ec2 describe-network-interfaces --network-interface-id $(EMBEDDER_NETWORK_INTERFACE) \
+					--query $(PUBLIC_IP_QUERY) --output text)
+
+ELASTICSEARCH_ENDPOINT = $$(aws cloudformation describe-stacks --stack-name $(STACK_ELASTICSEARCH) \
+							--query $(ELASTICSEARCH_ENDPOINT_QUERY) --output text)
+
+API_CLUSTER_ARN = $$(aws cloudformation describe-stacks --stack-name $(STACK_API_SERVICE) \
+				--query $(CLUSTER_ARN_QUERY) --output text)
+API_TASK = $$(aws ecs list-tasks --cluster $(API_CLUSTER_ARN) --query $(TASK_QUERY) --output text)
+API_NETWORK_INTERFACE = $$(aws ecs describe-tasks --cluster $(API_CLUSTER_ARN) --tasks $(API_TASK) \
+					--query $(NETWORK_INTERFACE_QUERY) --output text)
+API_PUBLIC_IP = $$(aws ec2 describe-network-interfaces --network-interface-id $(API_NETWORK_INTERFACE) \
+					--query $(PUBLIC_IP_QUERY) --output text)
+
+
+.PHONY: echo-embedder-ip
+echo-embedder-ip:
+	echo $(EMBEDDER_PUBLIC_IP)
+
+.PHONY: echo-elastic-search-endpoint
+echo-elastic-search-endpoint:
+	echo $(ELASTICSEARCH_ENDPOINT)
+
+.PHONY: echo-api-ip
+echo-api-ip:
+	echo $(API_PUBLIC_IP)

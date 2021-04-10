@@ -1,6 +1,11 @@
+"""
+Search API Stack
+"""
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_elasticsearch as aes
+from aws_cdk import aws_iam as iam
 from aws_cdk import core
 
 from config import config
@@ -10,7 +15,17 @@ API_IMAGE_TAG = "latest"
 
 
 class SearchAPIService(core.Stack):
-    def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
+    """
+    ECS API Service
+    """
+
+    def __init__(
+        self,
+        scope: core.Construct,
+        construct_id: str,
+        elastic_domain: aes.Domain,
+        **kwargs,
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         vpc = ec2.Vpc(self, "SearchAPIVpc", max_azs=1, nat_gateways=0)
@@ -26,7 +41,19 @@ class SearchAPIService(core.Stack):
             image=container_image,
             port_mappings=[ecs.PortMapping(container_port=8000, protocol=ecs.Protocol.TCP)],
             memory_reservation_mib=512,
+            # logging=ecs.LogDriver.aws_logs(stream_prefix="api_container"),
+            environment={
+                "ES_URL": elastic_domain.domain_endpoint,
+                "ES_USER": config.get_es_credentials()[0],
+                "ES_PASSWORD": config.get_es_credentials()[1],
+                "INDEX_NAME": config.get_es_index(),
+            },
         )
+
+        ecs_access_statement = iam.PolicyStatement(
+            actions=["ecs:ListTasks", "ecs:DescribeTasks", "ec2:DescribeNetworkInterfaces"], resources=["*"]
+        )
+        task_definition.add_to_task_role_policy(ecs_access_statement)
 
         fargate_service = ecs.FargateService(
             self,
@@ -40,9 +67,11 @@ class SearchAPIService(core.Stack):
         fargate_service.connections.security_groups[0].add_ingress_rule(
             peer=ec2.Peer.ipv4("0.0.0.0/0"),
             connection=ec2.Port.tcp(8000),
-            description="Allow TF serving REST inbound from VPC",
+            description="Allow HTTP REST inbound from VPC",
         )
 
         core.Tags.of(vpc).add("system-id", config.get_system_id())
         core.Tags.of(cluster).add("system-id", config.get_system_id())
         core.Tags.of(task_definition).add("system-id", config.get_system_id())
+
+        core.CfnOutput(self, "ClusterArn", value=cluster.cluster_arn)
