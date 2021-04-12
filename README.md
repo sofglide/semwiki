@@ -148,10 +148,15 @@ GET /semwiki/_doc/53747466?pretty
 GET /semwiki/_search
 {
   "size": 10,
-  "_source": ["url", "uri", "title"],
-    "query": {
-      "function_score": {
-        "functions": [{
+  "_source": [
+    "url",
+    "uri",
+    "title"
+  ],
+  "query": {
+    "function_score": {
+      "functions": [
+        {
           "random_score": {
             "seed": "1518707649"
           }
@@ -163,9 +168,8 @@ GET /semwiki/_search
 
 GET /semwiki/_search
 {
-  "size": 5, 
-  "query":
-  {
+  "size": 5,
+  "query": {
     "function_score": {
       "query": {
         "match_all": {}
@@ -181,7 +185,9 @@ GET /semwiki/_search
 
 GET /semwiki/_search
 {
-  "_source": ["title"],
+  "_source": [
+    "title"
+  ],
   "query": {
     "match_all": {}
   }
@@ -190,8 +196,20 @@ GET /semwiki/_search
 GET /semwiki/_search
 {
   "size": 10,
-  "stored_fields": ["_id"], 
-  "_source": ["url"],
+  "stored_fields": [
+    "_id"
+  ],
+  "_source": [
+    "title",
+    "url"
+  ],
+  "query": {
+    "match_all": {}
+  }
+}
+
+POST /semwiki/_delete_by_query
+{
   "query": {
     "match_all": {}
   }
