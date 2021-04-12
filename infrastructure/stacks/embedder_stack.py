@@ -24,7 +24,7 @@ class EmbeddingService(core.Stack):
 
         cluster = ecs.Cluster(self, "EmbeddingCluster", vpc=vpc)
 
-        task_definition = ecs.FargateTaskDefinition(self, "EmbeddingTask", cpu=512, memory_limit_mib=1024)
+        task_definition = ecs.FargateTaskDefinition(self, "EmbeddingTask", cpu=1024, memory_limit_mib=2048)
 
         ecr_repo = ecr.Repository.from_repository_name(self, "EmbeddingRepo", EMBEDDING_REPO_NAME)
         container_image = ecs.ContainerImage.from_ecr_repository(repository=ecr_repo, tag=EMBEDDING_IMAGE_TAG)
@@ -32,7 +32,7 @@ class EmbeddingService(core.Stack):
             "EmbeddingContainer",
             image=container_image,
             port_mappings=[ecs.PortMapping(container_port=8501, protocol=ecs.Protocol.TCP)],
-            memory_reservation_mib=1024,
+            memory_reservation_mib=2048,
         )
 
         embedding_service = ecs.FargateService(
