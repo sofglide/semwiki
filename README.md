@@ -104,7 +104,8 @@ files added to the s3 bucket and the corresponding pages indexed in Elasticsearc
 * test API service
   * Search API IP can be obtained with `make echo-api-ip`
   ```shell
-  curl -XGET -d '{"query": "beautiful painting"}' http://<API_SERVICE_IP>:8000/search\?n\=3 | jq
+  curl -XGET -d '{"query": "entertainment"}' http://<API_SERVICE_IP>:8000/search\?n\=3 | \
+      jq '.[] | {"title": .title, "url": .url}'
   ```
 
 ## Disclaimers
