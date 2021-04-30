@@ -307,3 +307,28 @@ echo-elastic-search-endpoint:
 .PHONY: echo-api-ip
 echo-api-ip:
 	echo $(API_PUBLIC_IP)
+
+###############################################################################
+# CDK:                                                                 #
+###############################################################################
+
+.PHONY: deploy-es
+deploy-es:
+	cd infrastructure && PYTHONPATH=../src cdk deploy ESCluster && cd ..
+
+.PHONY: create-es-index
+create-es-index:
+	python src/scripts.py create-index
+
+.PHONY: deploy-embedder
+deploy-embedder:
+	cd infrastructure && PYTHONPATH=../src cdk deploy EmbeddingService && cd ..
+
+.PHONY: deploy-referencing
+deploy-referencing:
+	cd infrastructure && PYTHONPATH=../src cdk deploy WikiReferencing && cd ..
+
+.PHONY: deploy-api
+deploy-api:
+	cd infrastructure && PYTHONPATH=../src cdk deploy SearchAPIService && cd ..
+
