@@ -146,8 +146,8 @@ docker-embedder-image:
 		.
 
 
-.PHONY: docker-create-ecr-embedder-repo
-docker-create-ecr-embedder-repo:
+.PHONY: docker-create-ecr-embedder
+docker-create-ecr-embedder:
 	aws ecr create-repository --repository-name $(PROJECT_NAME)/$(MODEL_NAME) \
 	--image-scanning-configuration scanOnPush=true \
 	--region eu-west-1
@@ -189,8 +189,8 @@ docker-api-image:
 		.
 
 
-.PHONY: docker-create-api-ecr-repo
-docker-create-api-ecr-repo:
+.PHONY: docker-create-ecr-api
+docker-create-ecr-api:
 	aws ecr create-repository --repository-name $(PROJECT_NAME)/$(API_NAME) \
 	--image-scanning-configuration scanOnPush=true \
 	--region eu-west-1
