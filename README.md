@@ -50,11 +50,12 @@ source .venv/bin/activate
 # How to deploy stacks
 * deploy Elasticsearch stack
   ```shell
-  cd infrastructure && PYTHONPATH=../src cdk deploy ESCluster && cd ..
+  make deploy-es
   ```
+* in `src/config/config.ini` update `es_url` with Elasticsearch endpoint
 * create the index in the cluster
   ```shell
-  python src/scripts.py create-index
+  make create-es-index
   ```
 * build and push embedder image
   ```shell
@@ -62,13 +63,14 @@ source .venv/bin/activate
   ```
 * deploy embedding stack
    ```shell
-   cd infrastructure && PYTHONPATH=../src cdk deploy EmbeddingService && cd ..
+   make deploy-embedder
    ```
-* check the embedding service.make docker-api-image && make docker-api-push
+* check the embedding service
   * Embedder IP can be obtained with `make echo-embedder-ip`
   ```shell
   curl -XPOST -d '{"instances": ["toto", "tata"]}' http://<EMBEDDER_IP>:8501/v1/models/USE_3:predict | jq
   ```
+* in `src/config/config.ini` update `public_ip` with embedding service IP
 * Update embedder public ip in `src/config/config.ini`
   * this is a workaround to pass the embedding service container to the indexer
   lambda and the API service. A robust solution would be to assign a load balancer
@@ -80,7 +82,7 @@ source .venv/bin/activate
   ```
 * deploy WikiReferencing stack (S3 bucket + Lambda function + S3 Notification)
   ```shell
-  cd infrastructure && PYTHONPATH=../src cdk deploy WikiReferencing && cd ..
+  make deploy-referencing
   ```
 * check the referencing stack by sending a batch of Wikipedia pages, you should find json
 files added to the s3 bucket and the corresponding pages indexed in Elasticsearch index `semwiki`
@@ -99,7 +101,7 @@ files added to the s3 bucket and the corresponding pages indexed in Elasticsearc
   ```
 * deploy API service
   ```shell
-  cd infrastructure && PYTHONPATH=../src cdk deploy SearchAPIService && cd ..
+  make deploy-api
   ```
 * test API service
   * Search API IP can be obtained with `make echo-api-ip`
