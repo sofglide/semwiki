@@ -117,14 +117,10 @@ balancer with a fixed public IP to overcome this problem, but since the objectiv
 of this project is only to show the main idea of how to implement a semantic search
 engine, we do not want to have unnecessary costs related to these additional resources.
 
-Therefore, we overcome this problem with a workaround where the services interrogate
-AWS for resources details to get the public IPs. This comes with slightly higher complexity
-of deployed code in the Lambda function and the API container. In a real production environment,
-fixed ElasticIP should be attached to services.
+Consequently, for now, when the embedder is unreachable (from the indexing lambda or the search service),
+their respective code and docker image have to be updated with the new embedder IP.
+This happens when the embedder service is killed and re-created.
 
-## TODO
-* automate AWS infrastructure deployment using Makefile and AWS-CDK
-* deploy search endpoint in AWS
 
 ## ElasticSearch cURL requests (saved here to be used for debugging)
 ```
