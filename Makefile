@@ -243,6 +243,7 @@ INDEXING_LAMBDA_NAME = $$(aws cloudformation describe-stacks --stack-name $(STAC
 
 .PHONY: lambda-indexer-package
 lambda-indexer-package:
+	pip install -r lambda_indexer/requirements.txt --target lambda_indexer/package/
 	cd lambda_indexer/package && zip -r ../lambda_indexer.zip . && cd .. && \
 	zip -g lambda_indexer.zip lambda_function.py util.py
 

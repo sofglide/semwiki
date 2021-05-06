@@ -48,11 +48,15 @@ source .venv/bin/activate
 ```
 
 # How to deploy stacks
+* package indexing lambda
+  ```shell
+  make lambda-indexer-package
+  ```
 * deploy Elasticsearch stack
   ```shell
   make deploy-es
   ```
-* in `src/config/config.ini` update `es_url` with Elasticsearch endpoint
+* in `src/config/config.ini` update `es_url` with Elasticsearch endpoint. This can be obtained with `make echo-elastic-search-endpoint`
 * create the index in the cluster
   ```shell
   make create-es-index
@@ -70,8 +74,7 @@ source .venv/bin/activate
   ```shell
   curl -XPOST -d '{"instances": ["toto", "tata"]}' http://<EMBEDDER_IP>:8501/v1/models/USE_3:predict | jq
   ```
-* in `src/config/config.ini` update `public_ip` with embedding service IP
-* Update embedder public ip in `src/config/config.ini`
+* in `src/config/config.ini` update `public_ip` with embedding service public IP
   * this is a workaround to pass the embedding service container to the indexer
   lambda and the API service. A robust solution would be to assign a load balancer
     with an elastic IP to the embedder serivce, but this would increase the cost
