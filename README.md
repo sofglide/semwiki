@@ -3,10 +3,12 @@
 ![semantic search](images/wikipedia_semantic_search.svg?raw=true "Wikipedia Semantic Search")
 
 ## Description
-This is work in progress, many things in the workflow should be improved and 
-automated.
+This work shows how to create a semantic search engine over a set of wikipedia pages
+and deploy it as a service in AWS.
 
-This is still functional and it does the following:
+Infrastructure as Code (IaS) is used through AWS CDK.
+
+Here are the descriptions of some directories and files in the repo:
 * `src/wiki.py` gets random pages from wikipedia, enriches them with metadata
   and uploads them to an s3 bucket. This can be also run using
   ```bash
@@ -48,10 +50,6 @@ source .venv/bin/activate
 ```
 
 # How to deploy stacks
-* package indexing lambda
-  ```shell
-  make lambda-indexer-package
-  ```
 * deploy Elasticsearch stack
   ```shell
   make deploy-es
@@ -132,6 +130,8 @@ GET /_cat/indices?v=true&s=index&pretty
 GET /_cat/indices/semwiki?v=true&s=index&pretty
 
 GET /_cat/indices/semwiki?format=json
+
+DELETE /semwiki
 
 GET /semwiki
 
