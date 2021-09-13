@@ -1,6 +1,6 @@
 PROJECT_NAME = semwiki
 PROJECT_READABLE_NAME = "Semantic Wikipedia"
-PYTHON ?= python3.8
+PYTHON ?= python3
 SOURCE_FOLDER = src
 
 MODEL_NAME = universal_sentence_encoder_3
