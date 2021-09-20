@@ -296,6 +296,10 @@ API_NETWORK_INTERFACE = $$(aws ecs describe-tasks --cluster $(API_CLUSTER_ARN) -
 API_PUBLIC_IP = $$(aws ec2 describe-network-interfaces --network-interface-id $(API_NETWORK_INTERFACE) \
 					--query $(PUBLIC_IP_QUERY) --output text)
 
+.PHONY: cdk-bootstrap-environment
+cdk-bootstrap-environment:
+	cd infrastructure && PYTHONPATH=../src cdk bootstrap && cd ..
+
 
 .PHONY: echo-embedder-ip
 echo-embedder-ip:
