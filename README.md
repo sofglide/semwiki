@@ -50,6 +50,10 @@ source .venv/bin/activate
 ```
 
 # How to deploy stacks
+* bootstrap environment
+  ```shell
+  make cdk-bootstrap-environment
+  ```
 * create docker registries
   ```shell
   make docker-create-ecr-embedder
