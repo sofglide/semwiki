@@ -50,6 +50,11 @@ source .venv/bin/activate
 ```
 
 # How to deploy stacks
+* create docker registries
+  ```shell
+  make docker-create-ecr-embedder
+  make docker-create-ecr-api
+  ```
 * deploy Elasticsearch stack
   ```shell
   make deploy-es
